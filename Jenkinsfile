@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    triggers {
-        pollSCM('H/5 * * * *') // 每 5 分鐘進行一次輪詢檢查
-    }
-
     stages {
         stage('Build') {
             steps {
