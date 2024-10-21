@@ -23,10 +23,10 @@ pipeline {
 
 
 
-        stage('Start Application') {  // 啟動應用程序
+        stage('Start Application') {
             steps {
-                echo 'Starting the Express.js application...'
-                sh 'npm start'  // 使用 npm start 來啟動 Express.js 應用
+                echo 'Starting the Express.js application using PM2...'
+                sh 'pm2 start npm --name "express-app" -- start'  // 使用 PM2 啟動應用
             }
         }
     }
