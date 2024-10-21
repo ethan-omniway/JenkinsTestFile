@@ -2,17 +2,14 @@ pipeline {
     agent any 
 
     tools {
-        nodejs 'node latest'  // 這裡填寫你在 Jenkins 中設置的 Node.js 名稱
+        nodejs 'node latest'  // 確保這裡的名稱與 Jenkins 中設置的 Node.js 名稱一致
     }
 
     environment {
         NODE_ENV = 'production'  
     }
 
-
     stages {
-
-
         stage('Install Dependencies') {  // 安裝依賴
             steps {
                 echo 'Installing dependencies...'
@@ -20,13 +17,19 @@ pipeline {
             }
         }
 
-
-
-
-        stage('Start Application') {
+        stage('Start Application') {  // 啟動應用程序
             steps {
-                echo 'Starting the Express.js application using PM2...'
-                sh 'pm2 start npm --name "express-app" -- start'  // 使用 PM2 啟動應用
+                echo 'Starting the Express.js application...'
+                script {
+                    // 在背景啟動應用
+                    sh 'npm start &'
+                    
+                    // 等待 10 秒
+                    sleep time: 10, unit: 'SECONDS'
+                    
+                    // 取得應用的 PID 並停止
+                    sh 'pkill -f "npm start"'
+                }
             }
         }
     }
