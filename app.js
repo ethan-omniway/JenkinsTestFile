@@ -1,3 +1,4 @@
+require("dotenv").config();
 var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
@@ -27,7 +28,8 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 
-console.log(1);
+console.log(`現在的環近變數是${process.env.NODE_ENV}`);
+
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development

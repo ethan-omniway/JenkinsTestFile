@@ -1,23 +1,38 @@
 pipeline {
-    agent any
+    agent any 
+
+    environment {
+        NODE_ENV = 'production'  
+    }
+
 
     stages {
-        stage('Build') {
+
+
+        stage('Install Dependencies') {  // 安裝依賴
             steps {
-                sh 'echo "Building..."'
+                echo 'Installing dependencies...'
+                sh 'npm install'  // 安裝 package.json 中的依賴
             }
         }
 
-        stage('Test') {
+
+
+
+        stage('Start Application') {  // 啟動應用程序
             steps {
-                sh 'echo "Testing..."'
+                echo 'Starting the Express.js application...'
+                sh 'npm start'  // 使用 npm start 來啟動 Express.js 應用
             }
         }
+    }
 
-        stage('Deploy') {
-            steps {
-                sh 'echo "Deploying..."'
-            }
+    post {
+        success {
+            echo 'Build and Deployment successful!'
+        }
+        failure {
+            echo 'Build or Deployment failed.'
         }
     }
 }
