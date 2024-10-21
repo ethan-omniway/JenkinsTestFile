@@ -2,7 +2,7 @@ pipeline {
     agent any 
 
     tools {
-        nodejs 'NodeJS 20'  // 這裡填寫你在 Jenkins 中設置的 Node.js 名稱
+        nodejs 'node latest'  // 這裡填寫你在 Jenkins 中設置的 Node.js 名稱
     }
 
     environment {
