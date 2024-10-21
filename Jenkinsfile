@@ -17,6 +17,12 @@ pipeline {
             }
         }
 
+        stage('Run Tests') {  // 執行測試
+            steps {
+                echo 'Running tests...'
+            }
+        }
+
         stage('Start Application') {  // 啟動應用程序
             steps {
                 echo 'Starting the Express.js application...'
