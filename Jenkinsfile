@@ -19,7 +19,7 @@ pipeline {
 
         stage('Run Tests') {  // 執行測試
             steps {
-                echo 'Running tests...'
+                echo 'Running tests....'
             }
         }
 
