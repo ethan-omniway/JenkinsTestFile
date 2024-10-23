@@ -26,7 +26,7 @@ pipeline {
         stage('Start Application') {  // 啟動應用程序
             steps {
                 echo 'Starting the Express.js application...'
-                sh 'npm start'  // 啟動應用程序
+                // sh 'npm start'  // 啟動應用程序
             }
         }
 
