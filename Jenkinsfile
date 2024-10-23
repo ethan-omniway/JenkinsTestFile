@@ -45,7 +45,7 @@ pipeline {
                             configName: 'ethan_test', // 你設定的 SSH 伺服器名稱
                             transfers: [
                                 sshTransfer(
-                                    execCommand: 'ls' // 這裡是你要執行的命令
+                                    execCommand: 'ls -al' // 這裡是你要執行的命令
                                 )
                             ],
                             usePromotionTimestamp: false,
