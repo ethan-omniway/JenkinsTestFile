@@ -26,16 +26,34 @@ pipeline {
         stage('Start Application') {  // 啟動應用程序
             steps {
                 echo 'Starting the Express.js application...'
-                script {
-                    // 在背景啟動應用
-                    sh 'npm start &'
-                    
-                    // 等待 10 秒
-                    sleep time: 10, unit: 'SECONDS'
-                    
-                    // 取得應用的 PID 並停止
-                    sh 'pkill -f "npm start"'
-                }
+                sh 'npm start'  // 啟動應用程序
+            }
+        }
+
+        stage('Deploy') {  // 部署
+            steps {
+                echo 'Deploying the application...'
+                // 部署代碼的步驟，例如上傳文件或執行部署腳本
+            }
+        }
+
+        stage('Execute command over SSH') {  // 部署後執行 SSH 操作
+            steps {
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'ethan_test', // 你設定的 SSH 伺服器名稱
+                            transfers: [
+                                sshTransfer(
+                                    execCommand: 'ls' // 這裡是你要執行的命令
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: true
+                        )
+                    ]
+                )
             }
         }
     }
