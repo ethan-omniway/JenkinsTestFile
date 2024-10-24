@@ -37,25 +37,47 @@ pipeline {
             }
         }
 
-        stage('Execute command over SSH') {  // 部署後執行 SSH 操作
+        stage('拉取代碼') {
             steps {
-                sshPublisher(
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: 'ethan_test', // 你設定的 SSH 伺服器名稱
-                            transfers: [
-                                sshTransfer(
-                                    execCommand: 'ls -al' // 這裡是你要執行的命令
-                                )
-                            ],
-                            usePromotionTimestamp: false,
-                            useWorkspaceInPromotion: false,
-                            verbose: true
-                        )
-                    ]
-                )
+                script {
+                    // 使用 SSH Agent 加载凭证
+                    sshagent (credentials: ['你的凭证ID']) {
+                        // 拉取代码
+                        git branch: 'main', url: 'git@github.com:ethan-omniway/JenkinsTestFile.git'
+                    }
+                }
             }
         }
+        
+        stage('列出檔案') {
+            steps {
+                // 列出檔案
+                sh 'ls -la'
+        }
+
+    }    
+
+
+
+        // stage('Execute command over SSH') {  // 部署後執行 SSH 操作
+        //     steps {
+        //         sshPublisher(
+        //             publishers: [
+        //                 sshPublisherDesc(
+        //                     configName: 'ethan_test', // 你設定的 SSH 伺服器名稱
+        //                     transfers: [
+        //                         sshTransfer(
+        //                             execCommand: 'ls -al' // 這裡是你要執行的命令
+        //                         )
+        //                     ],
+        //                     usePromotionTimestamp: false,
+        //                     useWorkspaceInPromotion: false,
+        //                     verbose: true
+        //                 )
+        //             ]
+        //         )
+        //     }
+        // }
     }
 
     post {
