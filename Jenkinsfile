@@ -10,8 +10,6 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
     }
 
-    // 在 script 外定义 randomImageName 作为全局变量
-    def randomImageName = ""
 
     stages {
         stage('Install Dependencies') {  
