@@ -27,7 +27,7 @@ pipeline {
         steps {
             git branch: 'main', url: 'git@github.com:ethan-omniway/JenkinsTestFile.git', credentialsId: '58571e13-cc9c-43c4-97dd-af4015ebd452'
         }
-}
+    }
 
 
 
@@ -44,4 +44,4 @@ pipeline {
             echo 'Build or Deployment failed.'
         }
     }
-}
+
