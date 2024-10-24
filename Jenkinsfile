@@ -2,39 +2,60 @@ pipeline {
     agent any 
 
     tools {
-        nodejs 'node latest'  // 確保這裡的名稱與 Jenkins 中設置的 Node.js 名稱一致
+        nodejs 'node latest'  // 确保你的 NodeJS 环境名称是 'node latest'
     }
 
     environment {
-        NODE_ENV = 'production'  
+        NODE_ENV = 'production'
+        DOCKERHUB_CREDENTIALS = credentials('ethan_github_all_token') 
     }
 
     stages {
-        stage('Install Dependencies') {  // 安裝依賴
+        stage('Install Dependencies') {  
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install'  // 安裝 package.json 中的依賴
+                sh 'npm install' 
             }
         }
 
-        stage('Run Tests') {  // 執行測試
+        stage('Run Tests') {  
             steps {
                 echo 'Running tests....'
+                // sh 'npm test'  // 执行 npm 测试
             }
         }
 
-    stage('Checkout') {
-        steps {
-            git branch: 'main', url: 'git@github.com:ethan-omniway/JenkinsTestFile.git'
+        stage('Build Random Docker Image') {
+            steps {
+                script {
+                    // 使用随机名称构建 Docker 镜像
+                    def randomImageName = "ghcr.io/ethan-omniway/random-image:${java.util.UUID.randomUUID()}"
+                    echo "Building Docker image with name: ${randomImageName}"
+
+                    // 构建镜像
+                    sh "docker build -t ${randomImageName} ."
+                }
+            }
         }
-    }
 
+        stage('Login to GitHub Container Registry') {
+            steps {
+                script {
+                    // 登录 GitHub Container Registry
+                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
+                }
+            }
+        }
 
-
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // 推送镜像到 GitHub Packages
+                    sh "docker push ${randomImageName}"
+                }
+            }
+        }
     }    
-
-
-    }
 
     post {
         success {
@@ -44,4 +65,4 @@ pipeline {
             echo 'Build or Deployment failed.'
         }
     }
-
+}
