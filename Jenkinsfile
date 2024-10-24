@@ -23,61 +23,17 @@ pipeline {
             }
         }
 
-        stage('Start Application') {  // 啟動應用程序
-            steps {
-                echo 'Starting the Express.js application...'
-                // sh 'npm start'  // 啟動應用程序
-            }
+    stage('Checkout') {
+        steps {
+            git branch: 'main', url: 'git@github.com:ethan-omniway/JenkinsTestFile.git', credentialsId: '58571e13-cc9c-43c4-97dd-af4015ebd452'
         }
+}
 
-        stage('Deploy') {  // 部署
-            steps {
-                echo 'Deploying the application...'
-                // 部署代碼的步驟，例如上傳文件或執行部署腳本
-            }
-        }
 
-        stage('拉取代碼') {
-            steps {
-                script {
-                    // 使用 SSH Agent 加载凭证
-                    sshagent (credentials: ['你的凭证ID']) {
-                        // 拉取代码
-                        git branch: 'main', url: 'git@github.com:ethan-omniway/JenkinsTestFile.git'
-                    }
-                }
-            }
-        }
-        
-        stage('列出檔案') {
-            steps {
-                // 列出檔案
-                sh 'ls -la'
-        }
 
     }    
 
 
-
-        // stage('Execute command over SSH') {  // 部署後執行 SSH 操作
-        //     steps {
-        //         sshPublisher(
-        //             publishers: [
-        //                 sshPublisherDesc(
-        //                     configName: 'ethan_test', // 你設定的 SSH 伺服器名稱
-        //                     transfers: [
-        //                         sshTransfer(
-        //                             execCommand: 'ls -al' // 這裡是你要執行的命令
-        //                         )
-        //                     ],
-        //                     usePromotionTimestamp: false,
-        //                     useWorkspaceInPromotion: false,
-        //                     verbose: true
-        //                 )
-        //             ]
-        //         )
-        //     }
-        // }
     }
 
     post {
