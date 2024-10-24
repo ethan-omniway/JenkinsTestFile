@@ -25,7 +25,7 @@ pipeline {
 
     stage('Checkout') {
         steps {
-            git branch: 'main', url: 'https://github.com/ethan-omniway/JenkinsTestFile.git'
+            git branch: 'main', url: 'git@github.com:ethan-omniway/JenkinsTestFile.git'
         }
     }
 
