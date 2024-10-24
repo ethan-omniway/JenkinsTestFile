@@ -1,35 +1,38 @@
 pipeline {
-    agent any 
+    agent any
 
     tools {
-        nodejs 'node latest'  // 确保你的 NodeJS 环境名称是 'node latest'
+        nodejs 'node latest'
     }
 
     environment {
         NODE_ENV = 'production'
-        DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe') 
+        DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
     }
+
+    // 在 script 外定义 randomImageName 作为全局变量
+    def randomImageName = ""
 
     stages {
         stage('Install Dependencies') {  
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install' 
+                sh 'npm install'
             }
         }
 
-        stage('Run Tests') {  
+        stage('Run Tests') {
             steps {
                 echo 'Running tests....'
-                // sh 'npm test'  // 执行 npm 测试
+                sh 'npm test'
             }
         }
 
         stage('Build Random Docker Image') {
             steps {
                 script {
-                    // 使用随机名称构建 Docker 镜像
-                    def randomImageName = "ghcr.io/ethan-omniway/random-image:${java.util.UUID.randomUUID()}"
+                    // 使用随机名称构建 Docker 镜像，并保存为全局变量
+                    randomImageName = "ghcr.io/ethan-omniway/random-image:${java.util.UUID.randomUUID()}"
                     echo "Building Docker image with name: ${randomImageName}"
 
                     // 构建镜像
@@ -55,14 +58,14 @@ pipeline {
                 }
             }
         }
-    }    
+    }
 
     post {
         success {
-            echo 'Build and Deployment successful!'
+            echo "Build and deployment of ${randomImageName} successful!"
         }
         failure {
-            echo 'Build or Deployment failed.'
+            echo 'Build or deployment failed.'
         }
     }
 }
