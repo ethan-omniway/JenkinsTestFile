@@ -25,7 +25,7 @@ pipeline {
 
     stage('Checkout') {
         steps {
-            git branch: 'main', url: 'https://github.com/your_username/your_repo.git'
+            git branch: 'main', url: 'https://github.com/ethan-omniway/JenkinsTestFile.git'
         }
     }
 
