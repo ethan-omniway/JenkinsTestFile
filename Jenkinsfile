@@ -25,7 +25,7 @@ pipeline {
 
     stage('Checkout') {
         steps {
-            git branch: 'main', url: 'git@github.com:ethan-omniway/JenkinsTestFile.git', credentialsId: '58571e13-cc9c-43c4-97dd-af4015ebd452'
+            git branch: 'main', url: 'https://github.com/your_username/your_repo.git'
         }
     }
 
