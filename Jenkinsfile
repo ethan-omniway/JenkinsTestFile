@@ -51,7 +51,7 @@ pipeline {
 
     post {
         success {
-            echo "Build and deployment of ${randomImageName} successful!"
+            echo 'Nginx Docker image successfully pushed to GitHub Packages!'
         }
         failure {
             echo 'Build or deployment failed.'
