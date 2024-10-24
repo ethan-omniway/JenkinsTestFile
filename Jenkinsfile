@@ -28,15 +28,12 @@ pipeline {
             }
         }
 
-        stage('Build Random Docker Image') {
+        stage('Build Nginx Docker Image') {
             steps {
                 script {
-                    // 使用随机名称构建 Docker 镜像，并保存为全局变量
-                    randomImageName = "ghcr.io/ethan-omniway/random-image:${java.util.UUID.randomUUID()}"
-                    echo "Building Docker image with name: ${randomImageName}"
-
-                    // 构建镜像
-                    sh "docker build -t ${randomImageName} ."
+                    // 拉取 Nginx 官方镜像并打标签
+                    sh "docker pull nginx:latest"
+                    sh "docker tag nginx:latest ghcr.io/ethan-omniway/nginx:latest"
                 }
             }
         }
@@ -50,11 +47,11 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Push Docker Image to GitHub Packages') {
             steps {
                 script {
-                    // 推送镜像到 GitHub Packages
-                    sh "docker push ${randomImageName}"
+                    // 推送 Nginx 镜像到 GitHub Packages
+                    sh "docker push ghcr.io/ethan-omniway/nginx:latest"
                 }
             }
         }
