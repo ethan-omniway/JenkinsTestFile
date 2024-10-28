@@ -7,7 +7,7 @@ pipeline {
     }
 
     triggers {
-        githubPullRequests(events: [Open(), commitChanged()], spec: '', triggerMode: 'HEAVY_HOOKS')
+        githubPullRequests(events: [Open(), commitChanged()])
     }
 
     environment {
@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage("node & git version") {
             steps {
-                echo 'Checking Node and Npm version and Docker'
+                echo 'Checking Node, Npm, and Docker versions'
                 setGitHubPullRequestStatus(context: 'Robot', message: 'Checking Node and Npm version', state: 'PENDING')
                 sh '''
                     node -v
@@ -30,10 +30,11 @@ pipeline {
 
         stage("test code"){
             steps {
-                echo "Running test code form develop"
+                echo "Running test code from develop"
             }
         }
 
+        // 如果需要，解開下列註解
         // stage('Clone Git Repository') {
         //     steps {
         //         echo 'Cloning the repository'
@@ -43,30 +44,6 @@ pipeline {
         //             branch: env.GITHUB_PR_SOURCE_BRANCH,
         //             credentialsId: '839fa9ee-f7d5-481e-8185-0f47d1566351'
         //         )
-        //     }
-        // }
-        // stage('Build Nginx Docker Image') {
-        //     steps {
-        //         script {
-        //             sh "docker pull nginx:latest"
-        //             sh "docker tag nginx:latest ghcr.io/omnitw/nginx:0.1"
-        //         }
-        //     }
-        // }
-
-        // stage('Login to GitHub Container Registry') {
-        //     steps {
-        //         script {
-        //             sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
-        //         }
-        //     }
-        // }
-
-        // stage('Push Docker Image to GitHub Packages') {
-        //     steps {
-        //         script {
-        //             sh "docker push ghcr.io/omnitw/nginx:0.1"
-        //         }
         //     }
         // }
     }
