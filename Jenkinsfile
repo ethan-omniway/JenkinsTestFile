@@ -18,7 +18,7 @@ pipeline {
         stage("node & git version") {
             steps {
                 echo 'Checking Node, Npm, and Docker versions'
-                setGitHubPullRequestStatus(context: 'Robot', message: 'Checking Node and Npm version', state: 'PENDING')
+                // setGitHubPullRequestStatus(context: 'Robot', message: 'Checking Node and Npm version', state: 'PENDING')
                 sh '''
                     node -v
                     npm -v
