@@ -7,15 +7,12 @@ pipeline {
     }
 
     stages {
-
         stage("Fetch and Increment Version") {
-
-            steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
-            }
-
             steps {
                 script {
+                    // 登录到 GitHub Container Registry
+                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
+                    
                     // 使用 Docker Hub API 获取版本列表并找到最新版本
                     def imageName = env.IMAGE_NAME.split('/')[1] // 取出仓库名称部分
                     def tagsResponse = sh(
