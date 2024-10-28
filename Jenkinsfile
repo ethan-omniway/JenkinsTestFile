@@ -32,7 +32,7 @@ pipeline {
                     }.last() ?: "0.1"
 
                     echo "Current latest version on Docker Hub: ${latestTag}"
-
+// 
                     // 将版本递增
                     def (major, minor) = latestTag.tokenize('.').collect { it.toInteger() }
                     minor += 1
