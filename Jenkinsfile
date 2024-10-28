@@ -2,59 +2,87 @@ pipeline {
     agent any
 
     tools {
+        git 'git' 
         nodejs 'node latest'
     }
 
+    triggers {
+        githubPullRequests(events: [Open(), commitChanged()], spec: '', triggerMode: 'HEAVY_HOOKS')
+    }
+
     environment {
-        NODE_ENV = 'production'
         DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
     }
 
-
     stages {
-        stage('Install Dependencies') {  
+        stage("node & git version") {
             steps {
-                echo 'Installing dependencies...'
-                sh 'npm install'
+                echo 'Checking Node and Npm version and Docker'
+                setGitHubPullRequestStatus(context: 'Robot', message: 'Checking Node and Npm version', state: 'PENDING')
+                sh '''
+                    node -v
+                    npm -v
+                    git --version
+                    docker --version
+                '''
             }
         }
 
-
-        stage('Build Nginx Docker Image') {
+        stage("test code"){
             steps {
-                script {
-                    // 拉取 Nginx 官方镜像并打标签
-                    sh "docker pull nginx:latest"
-                    sh "docker tag nginx:latest ghcr.io/ethan-omniway/nginx:latest"
-                }
+                sh 'echo "make test"'
             }
         }
 
-        stage('Login to GitHub Container Registry') {
-            steps {
-                script {
-                    // 登录 GitHub Container Registry
-                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
-                }
-            }
-        }
+        // stage('Clone Git Repository') {
+        //     steps {
+        //         echo 'Cloning the repository'
+        //         setGitHubPullRequestStatus(context: 'Robot', message: 'Cloning the repository', state: 'PENDING')
+        //         git(
+        //             url: env.GIT_URL,
+        //             branch: env.GITHUB_PR_SOURCE_BRANCH,
+        //             credentialsId: '839fa9ee-f7d5-481e-8185-0f47d1566351'
+        //         )
+        //     }
+        // }
+        // stage('Build Nginx Docker Image') {
+        //     steps {
+        //         script {
+        //             sh "docker pull nginx:latest"
+        //             sh "docker tag nginx:latest ghcr.io/omnitw/nginx:0.1"
+        //         }
+        //     }
+        // }
 
-        stage('Push Docker Image to GitHub Packages') {
-            steps {
-                script {
-                    // 推送 Nginx 镜像到 GitHub Packages
-                    sh "docker push ghcr.io/ethan-omniway/nginx:latest"
-                }
-            }
-        }
+        // stage('Login to GitHub Container Registry') {
+        //     steps {
+        //         script {
+        //             sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
+        //         }
+        //     }
+        // }
+
+        // stage('Push Docker Image to GitHub Packages') {
+        //     steps {
+        //         script {
+        //             sh "docker push ghcr.io/omnitw/nginx:0.1"
+        //         }
+        //     }
+        // }
     }
 
     post {
+        always {
+            cleanWs()
+            echo 'Pipeline finished'
+        }
         success {
-            echo 'Nginx Docker image successfully pushed to GitHub Packages!'
+            echo 'Build & Deployment Successful'
+            setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Success', state: 'SUCCESS')
         }
         failure {
-            echo 'Build or deployment failed.'
+            echo 'Build or Deployment Failed'
+            setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Failed', state: 'FAILURE')
         }
     }
 }
