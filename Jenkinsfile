@@ -16,25 +16,32 @@ pipeline {
         }
 
 
-        stage("Fetch and Increment Version") {
+    stage("Fetch and Increment Version") {
             steps {
                 script {
-                    // 获取所有 Docker 标签并找到最新符合 0.x 格式的版本
-                    def latestTag = sh(
-                        script: """docker pull --all-tags "${IMAGE_NAME}" || true && docker images --format '{{.Tag}}' "${IMAGE_NAME}" | grep -E '^0\\.[0-9]+$' | sort -V | tail -n 1""",
+                    // 使用 Docker Hub API 获取版本列表并找到最新版本
+                    def imageName = env.IMAGE_NAME.split('/')[1] // 取出仓库名称部分
+                    def tagsResponse = sh(
+                        script: "curl -s https://hub.docker.com/v2/repositories/${env.IMAGE_NAME}/tags/",
                         returnStdout: true
                     ).trim()
+                    def tags = readJSON text: tagsResponse
 
-                    // 如果没有任何符合格式的版本，则初始化为 0.1
-                    if (!latestTag) {
-                        latestTag = "0.1"
-                    }
+                    // 筛选符合 0.x 格式的标签
+                    def latestTag = tags.results.findAll { tag ->
+                        tag.name ==~ /^0\.\d+$/
+                    }.collect { it.name }
+                    .sort { a, b -> 
+                        def aVersion = a.tokenize('.').collect { it.toInteger() }
+                        def bVersion = b.tokenize('.').collect { it.toInteger() }
+                        return aVersion[1] <=> bVersion[1]
+                    }.last() ?: "0.1"
 
                     echo "Current latest version on Docker Hub: ${latestTag}"
 
-                    // 分割版本号，将中间版本号递增
+                    // 将版本递增
                     def (major, minor) = latestTag.tokenize('.').collect { it.toInteger() }
-                    minor += 1  // 递增中间版本号
+                    minor += 1
                     def newVersion = "${major}.${minor}"
                     env.IMAGE_VERSION = newVersion
                     echo "New Docker image version: ${env.IMAGE_VERSION}"
