@@ -11,6 +11,7 @@ pipeline {
     // }
 
     environment {
+        IMAGE_NAME = "ghcr.io/omnitw/letcrm-api"
         DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
     }
 
@@ -28,34 +29,43 @@ pipeline {
             }
         }
 
-        stage("test") {
-            when {
-                branch "develop"
-            }
+
+        stage('Login to GitHub Container Registry') {
             steps {
-                echo "this is main develop test"
+                script {
+                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
+                }
             }
         }
 
 
-        stage("build") {
-            when {
-                branch "main"
-            }
-            steps {
-                echo "this is main branch build"
-            }
-        }
 
-        stage("Push"){
-            when {
-                branch "main"
-            }
+        stage("Pull Latest Docker Image") {
             steps {
-                echo "this is main branch push"
-            }
-        }
+                    script {
+                        // 拉取最新的 Docker 映像
+                        echo "Pulling latest Docker image: ${IMAGE_NAME}:latest"
+                        sh "docker pull ${IMAGE_NAME}:latest || true"
 
+                        // 獲取最新標籤
+                        def latestTag = sh(
+                            script: "docker images --format '{{.Tag}}' ${IMAGE_NAME} | sort -V | tail -n 1",
+                            returnStdout: true
+                        ).trim()
+
+                        // 若沒有標籤則初始化版本
+                        if (!latestTag) {
+                            latestTag = "1.0.0"
+                        }
+
+                        // 解析並遞增版本號
+                        def (major, minor, patch) = latestTag.tokenize('.').collect { it.toInteger() }
+                        patch += 1  // 遞增小版本
+                        env.IMAGE_VERSION = "${major}.${minor}.${patch}"
+                        echo "New Docker image version: ${env.IMAGE_VERSION}"
+                    }
+                }
+        }
         // 如果需要，解開下列註解
         // stage('Clone Git Repository') {
         //     steps {
