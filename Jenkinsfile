@@ -7,15 +7,13 @@ pipeline {
     }
 
     stages {
-        stage("Login to DockerHub") {
-            steps {
-                script {
-                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login -u your-dockerhub-username --password-stdin'
-                }
-            }
-        }
 
         stage("Fetch and Increment Version") {
+
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
+            }
+
             steps {
                 script {
                     // 使用 Docker Hub API 获取版本列表并找到最新版本
