@@ -15,8 +15,7 @@ pipeline {
             }
         }
 
-
-    stage("Fetch and Increment Version") {
+        stage("Fetch and Increment Version") {
             steps {
                 script {
                     // 使用 Docker Hub API 获取版本列表并找到最新版本
@@ -48,9 +47,6 @@ pipeline {
                 }
             }
         }
-        
-
-        
 
         // stage("Build Docker Image") {
         //     steps {
