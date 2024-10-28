@@ -16,7 +16,7 @@ pipeline {
                     // 使用 GitHub API 获取标签列表
                     def response = sh(
                         script: """
-                        curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+                        curl -s -H "Authorization: Bearer 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N" \
                         "https://ghcr.io/v2/omnitw/letcrm-api/tags/list"
                         """,
                         returnStdout: true
