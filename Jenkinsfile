@@ -1,97 +1,71 @@
 pipeline {
     agent any
 
-    tools {
-        git 'git' 
-        nodejs 'node latest'
-    }
-
-    // triggers {
-    //     githubPullRequests(events: [Open(), commitChanged()])
-    // }
-
     environment {
+        DOCKERHUB_CREDENTIALS = credentials('your-dockerhub-credentials-id')
         IMAGE_NAME = "ghcr.io/omnitw/letcrm-api"
-        DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
     }
 
     stages {
-        stage("node & git version") {
-            steps {
-                echo 'Checking Node, Npm, and Docker versions'
-                // setGitHubPullRequestStatus(context: 'Robot', message: 'Checking Node and Npm version', state: 'PENDING')
-                sh '''
-                    node -v
-                    npm -v
-                    git --version
-                    docker --version
-                '''
-            }
-        }
-
-
-        stage('Login to GitHub Container Registry') {
+        stage("Login to DockerHub") {
             steps {
                 script {
-                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
+                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login -u your-dockerhub-username --password-stdin'
                 }
             }
         }
 
-
-
-        stage("Pull Latest Docker Image") {
+        stage("Fetch and Increment Version") {
             steps {
-                    script {
-                        // 拉取最新的 Docker 映像
-                        echo "Pulling latest Docker image: ${IMAGE_NAME}:latest"
-                        sh "docker pull ${IMAGE_NAME}:latest || true"
+                script {
+                    // 获取所有 Docker 标签并找到最新的递增版本
+                    def latestTag = sh(
+                        script: "docker pull --all-tags ${IMAGE_NAME} || true && docker images --format '{{.Tag}}' ${IMAGE_NAME} | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+$' | sort -V | tail -n 1",
+                        returnStdout: true
+                    ).trim()
 
-                        // 獲取最新標籤
-                        def latestTag = sh(
-                            script: "docker images --format '{{.Tag}}' ${IMAGE_NAME} | sort -V | tail -n 1",
-                            returnStdout: true
-                        ).trim()
-
-                        // 若沒有標籤則初始化版本
-                        if (!latestTag) {
-                            latestTag = "1.0.0"
-                        }
-
-                        // 解析並遞增版本號
-                        def (major, minor, patch) = latestTag.tokenize('.').collect { it.toInteger() }
-                        patch += 1  // 遞增小版本
-                        env.IMAGE_VERSION = "${major}.${minor}.${patch}"
-                        echo "New Docker image version: ${env.IMAGE_VERSION}"
+                    // 如果没有任何版本，则初始化为1.0.0
+                    if (!latestTag) {
+                        latestTag = "1.0.0"
                     }
+
+                    echo "Current latest version on Docker Hub: ${latestTag}"
+
+                    // 将最新版本号分割成主版本、次版本和小版本并递增
+                    def (major, minor, patch) = latestTag.tokenize('.').collect { it.toInteger() }
+                    patch += 1  // 递增小版本
+                    def newVersion = "${major}.${minor}.${patch}"
+                    env.IMAGE_VERSION = newVersion
+                    echo "New Docker image version: ${env.IMAGE_VERSION}"
                 }
+            }
         }
-        // 如果需要，解開下列註解
-        // stage('Clone Git Repository') {
-        //     steps {
-        //         echo 'Cloning the repository'
-        //         setGitHubPullRequestStatus(context: 'Robot', message: 'Cloning the repository', state: 'PENDING')
-        //         git(
-        //             url: env.GIT_URL,
-        //             branch: env.GITHUB_PR_SOURCE_BRANCH,
-        //             credentialsId: '839fa9ee-f7d5-481e-8185-0f47d1566351'
-        //         )
-        //     }
-        // }
+
+        stage("Build Docker Image") {
+            steps {
+                script {
+                    echo "Building Docker image with tag: ${IMAGE_NAME}:${IMAGE_VERSION}"
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_VERSION} ."
+                }
+            }
+        }
+
+        stage("Push Docker Image") {
+            steps {
+                script {
+                    echo "Pushing Docker image to DockerHub with tag ${IMAGE_VERSION}"
+                    sh "docker push ${IMAGE_NAME}:${IMAGE_VERSION}"
+                }
+            }
+        }
     }
 
     post {
-        always {
-            // cleanWs()
-            echo 'Pipeline finished'
-        }
         success {
-            echo 'Build & Deployment Successful'
-            // setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Success', state: 'SUCCESS')
+            echo "Docker image ${IMAGE_NAME}:${IMAGE_VERSION} built and pushed successfully."
         }
         failure {
-            echo 'Build or Deployment Failed'
-            // setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Failed', state: 'FAILURE')
+            echo "Build or Deployment Failed"
         }
     }
 }
