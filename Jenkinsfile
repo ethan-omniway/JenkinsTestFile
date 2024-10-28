@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_TOKEN = credentials('your-github-token-id') // 在 Jenkins 中配置 GitHub Token 凭证
+        GITHUB_TOKEN = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe') // 在 Jenkins 中配置 GitHub Token 凭证
         IMAGE_NAME = "ghcr.io/omnitw/letcrm-api"
     }
 
