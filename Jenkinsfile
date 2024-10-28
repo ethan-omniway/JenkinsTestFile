@@ -28,9 +28,31 @@ pipeline {
             }
         }
 
-        stage("test code"){
+        stage("test") {
+            when {
+                branch "develop"
+            }
             steps {
-                echo "Running test code from main"
+                echo "this is main develop test"
+            }
+        }
+
+
+        stage("build") {
+            when {
+                branch "main"
+            }
+            steps {
+                echo "this is main branch build"
+            }
+        }
+
+        stage("Push"){
+            when {
+                branch "main"
+            }
+            steps {
+                echo "this is main branch push"
             }
         }
 
