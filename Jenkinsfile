@@ -41,23 +41,23 @@ stage("Fetch and Increment Version") {
             }
         }
 
-        stage("Build Docker Image") {
-            steps {
-                script {
-                    echo "Building Docker image with tag: ${IMAGE_NAME}:${IMAGE_VERSION}"
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_VERSION} ."
-                }
-            }
-        }
+        // stage("Build Docker Image") {
+        //     steps {
+        //         script {
+        //             echo "Building Docker image with tag: ${IMAGE_NAME}:${IMAGE_VERSION}"
+        //             sh "docker build -t ${IMAGE_NAME}:${IMAGE_VERSION} ."
+        //         }
+        //     }
+        // }
 
-        stage("Push Docker Image") {
-            steps {
-                script {
-                    echo "Pushing Docker image to DockerHub with tag ${IMAGE_VERSION}"
-                    sh "docker push ${IMAGE_NAME}:${IMAGE_VERSION}"
-                }
-            }
-        }
+        // stage("Push Docker Image") {
+        //     steps {
+        //         script {
+        //             echo "Pushing Docker image to DockerHub with tag ${IMAGE_VERSION}"
+        //             sh "docker push ${IMAGE_NAME}:${IMAGE_VERSION}"
+        //         }
+        //     }
+        // }
     }
 
     post {
