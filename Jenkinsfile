@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
+        GITHUB_TOKEN = credentials('your-github-token-id') // 在 Jenkins 中配置 GitHub Token 凭证
         IMAGE_NAME = "ghcr.io/omnitw/letcrm-api"
     }
 
@@ -11,28 +11,34 @@ pipeline {
             steps {
                 script {
                     // 登录到 GitHub Container Registry
-                    sh 'echo $DOCKERHUB_CREDENTIALS | docker login ghcr.io -u ethan-omniway --password-stdin'
+                    sh 'echo $GITHUB_TOKEN | docker login ghcr.io -u ethan-omniway --password-stdin'
                     
-                    // 使用 Docker Hub API 获取版本列表并找到最新版本
-                    def imageName = env.IMAGE_NAME.split('/')[1] // 取出仓库名称部分
-                    def tagsResponse = sh(
-                        script: "curl -s https://hub.docker.com/v2/repositories/${env.IMAGE_NAME}/tags/",
+                    // 使用 GitHub API 获取标签列表
+                    def response = sh(
+                        script: """
+                        curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+                        "https://ghcr.io/v2/omnitw/letcrm-api/tags/list"
+                        """,
                         returnStdout: true
                     ).trim()
-                    def tags = readJSON text: tagsResponse
+
+                    // 确保输出标签列表
+                    echo "GitHub API Response: ${response}"
+
+                    // 解析标签信息
+                    def tags = readJSON text: response
 
                     // 筛选符合 0.x 格式的标签
-                    def latestTag = tags.results.findAll { tag ->
-                        tag.name ==~ /^0\.\d+$/
-                    }.collect { it.name }
-                    .sort { a, b -> 
+                    def latestTag = tags.tags.findAll { tag ->
+                        tag ==~ /^0\.\d+$/
+                    }.sort { a, b -> 
                         def aVersion = a.tokenize('.').collect { it.toInteger() }
                         def bVersion = b.tokenize('.').collect { it.toInteger() }
                         return aVersion[1] <=> bVersion[1]
                     }.last() ?: "0.1"
 
-                    echo "Current latest version on Docker Hub: ${latestTag}"
-// 
+                    echo "Current latest version on GitHub Container Registry: ${latestTag}"
+
                     // 将版本递增
                     def (major, minor) = latestTag.tokenize('.').collect { it.toInteger() }
                     minor += 1
@@ -55,7 +61,7 @@ pipeline {
         // stage("Push Docker Image") {
         //     steps {
         //         script {
-        //             echo "Pushing Docker image to DockerHub with tag ${IMAGE_VERSION}"
+        //             echo "Pushing Docker image to GitHub Container Registry with tag ${IMAGE_VERSION}"
         //             sh "docker push ${IMAGE_NAME}:${IMAGE_VERSION}"
         //         }
         //     }
