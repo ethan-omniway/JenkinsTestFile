@@ -6,9 +6,9 @@ pipeline {
         nodejs 'node latest'
     }
 
-    triggers {
-        githubPullRequests(events: [Open(), commitChanged()])
-    }
+    // triggers {
+    //     githubPullRequests(events: [Open(), commitChanged()])
+    // }
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
@@ -50,16 +50,16 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            // cleanWs()
             echo 'Pipeline finished'
         }
         success {
             echo 'Build & Deployment Successful'
-            setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Success', state: 'SUCCESS')
+            // setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Success', state: 'SUCCESS')
         }
         failure {
             echo 'Build or Deployment Failed'
-            setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Failed', state: 'FAILURE')
+            // setGitHubPullRequestStatus(context: 'Robot', message: 'Jenkins Failed', state: 'FAILURE')
         }
     }
 }
