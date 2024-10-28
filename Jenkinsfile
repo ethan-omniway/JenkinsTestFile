@@ -30,7 +30,7 @@ pipeline {
 
         stage("test code"){
             steps {
-                sh 'echo "make test"'
+                sh 'echo "make test from deveopment branch"'
             }
         }
 
