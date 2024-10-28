@@ -30,7 +30,7 @@ pipeline {
 
         stage("test code"){
             steps {
-                sh 'echo "make test"'
+                echo "Running test code form develop"
             }
         }
 
