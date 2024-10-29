@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_TOKEN = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe') // GitHub Token 憑證 ID
-        ORG_NAME = "omnitw" 
+        GITHUB_TOKEN = credentials('github-token')
+        ORG_NAME = "omnitw"
         PACKAGE_NAME = "letcrm-api"
+        NEW_VERSION = ""
     }
 
     stages {
@@ -19,14 +20,30 @@ pipeline {
                         """,
                         returnStdout: true
                     ).trim()
+
+                    echo "Response: ${response}"
                     
-                    // 輸出 JSON 回應，便於除錯
-                    echo "GitHub API Response: ${response}"
-                    
-                    // 解析 JSON 結果
                     def versions = readJSON text: response
                     def latestVersion = versions[0]?.metadata?.container?.tags[0]
                     echo "Latest version: ${latestVersion}"
+
+                    // 分解版本號，遞增小版本
+                    def (major, minor) = latestVersion.tokenize('.').collect { it.toInteger() }
+                    minor += 1
+                    NEW_VERSION = "${major}.${minor}"
+                    echo "New version to be pushed: ${NEW_VERSION}"
+                }
+            }
+        }
+
+        stage("Build and Push New Version") {
+            steps {
+                script {
+                    // 假設你已經有 Dockerfile，這裡可以構建並推送新版本
+                    echo "Building Docker image with tag: ${ORG_NAME}/${PACKAGE_NAME}:${NEW_VERSION}"
+                    
+                    // echo "Pushing Docker image with new version ${NEW_VERSION}"
+                    // sh "docker push ghcr.io/${ORG_NAME}/${PACKAGE_NAME}:${NEW_VERSION}"
                 }
             }
         }
@@ -34,10 +51,10 @@ pipeline {
 
     post {
         success {
-            echo "Fetched package versions successfully."
+            echo "New Docker image version ${NEW_VERSION} built and pushed successfully."
         }
         failure {
-            echo "Failed to fetch package versions."
+            echo "Build or Deployment Failed"
         }
     }
 }
