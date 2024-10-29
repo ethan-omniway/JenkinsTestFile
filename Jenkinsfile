@@ -1,8 +1,9 @@
+
 pipeline {
     agent any
 
     environment {
-        GITHUB_TOKEN = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe') // 在 Jenkins 中配置 GitHub Token 凭证
+        DOCKER_TOKEN = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe') // 在 Jenkins 中配置 GitHub Token 凭证
         IMAGE_NAME = "ghcr.io/omnitw/letcrm-api"
     }
 
@@ -10,41 +11,44 @@ pipeline {
         stage("Fetch and Increment Version") {
             steps {
                 script {
+
                     // 登录到 GitHub Container Registry
-                    sh 'echo $GITHUB_TOKEN | docker login ghcr.io -u ethan-omniway --password-stdin'
-                    
-                    // 使用 GitHub API 获取标签列表
-                    def response = sh(
-                        script: """
-                        curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-                        "https://ghcr.io/v2/omnitw/letcrm-api/tags/list"
-                        """,
-                        returnStdout: true
-                    ).trim()
+                    sh 'echo $DOCKER_TOKEN | docker login ghcr.io -u ethan-omniway --password-stdin'
 
-                    // 确保输出标签列表
-                    echo "GitHub API Response: ${response}"
+                    // 使用 Jenkins 凭据管理中的 GitHub Token
+                    withCredentials([string(credentialsId: 'fcabbd2e-0256-4d82-be73-ca4017a805fe', variable: 'GITHUB_TOKEN')]) {
+                        // 使用 GitHub API 获取标签列表
+                        def response = sh(
+                            script: """
+                            curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                            "https://ghcr.io/v2/omnitw/letcrm-api/tags/list"
+                            """,
+                            returnStdout: true
+                        ).trim()
+                        
+                        echo "GitHub API Response: ${response}"
 
-                    // 解析标签信息
-                    def tags = readJSON text: response
+                        // 解析返回的 JSON 数据
+                        def tags = readJSON text: response
 
-                    // 筛选符合 0.x 格式的标签
-                    def latestTag = tags.tags.findAll { tag ->
-                        tag ==~ /^0\.\d+$/
-                    }.sort { a, b -> 
-                        def aVersion = a.tokenize('.').collect { it.toInteger() }
-                        def bVersion = b.tokenize('.').collect { it.toInteger() }
-                        return aVersion[1] <=> bVersion[1]
-                    }.last() ?: "0.1"
+                        // 筛选符合 0.x 格式的标签
+                        def latestTag = tags.tags.findAll { tag ->
+                            tag ==~ /^0\.\d+$/
+                        }.sort { a, b -> 
+                            def aVersion = a.tokenize('.').collect { it.toInteger() }
+                            def bVersion = b.tokenize('.').collect { it.toInteger() }
+                            return aVersion[1] <=> bVersion[1]
+                        }.last() ?: "0.1"
 
-                    echo "Current latest version on GitHub Container Registry: ${latestTag}"
+                        echo "Current latest version on Docker Hub: ${latestTag}"
 
-                    // 将版本递增
-                    def (major, minor) = latestTag.tokenize('.').collect { it.toInteger() }
-                    minor += 1
-                    def newVersion = "${major}.${minor}"
-                    env.IMAGE_VERSION = newVersion
-                    echo "New Docker image version: ${env.IMAGE_VERSION}"
+                        // 将版本递增
+                        def (major, minor) = latestTag.tokenize('.').collect { it.toInteger() }
+                        minor += 1
+                        def newVersion = "${major}.${minor}"
+                        env.IMAGE_VERSION = newVersion
+                        echo "New Docker image version: ${env.IMAGE_VERSION}"
+                    }
                 }
             }
         }
@@ -77,3 +81,7 @@ pipeline {
         }
     }
 }
+
+
+
+
