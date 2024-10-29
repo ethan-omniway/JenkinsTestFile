@@ -11,7 +11,7 @@ pipeline {
         stage("Fetch and Increment Version") {
             steps {
                 script {
-
+// 
                     // 登录到 GitHub Container Registry
                     sh 'echo $DOCKER_TOKEN | docker login ghcr.io -u ethan-omniway --password-stdin'
 
