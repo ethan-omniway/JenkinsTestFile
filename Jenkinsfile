@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_TOKEN = credentials('github-token')
+        GITHUB_TOKEN = credentials('fcabbd2e-0256-4d82-be73-ca4017a805fe')
         ORG_NAME = "omnitw"
         PACKAGE_NAME = "letcrm-api"
         NEW_VERSION = ""
@@ -41,7 +41,7 @@ pipeline {
                 script {
                     // 假設你已經有 Dockerfile，這裡可以構建並推送新版本
                     echo "Building Docker image with tag: ${ORG_NAME}/${PACKAGE_NAME}:${NEW_VERSION}"
-                    
+
                     // echo "Pushing Docker image with new version ${NEW_VERSION}"
                     // sh "docker push ghcr.io/${ORG_NAME}/${PACKAGE_NAME}:${NEW_VERSION}"
                 }
