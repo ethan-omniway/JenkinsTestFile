@@ -9,7 +9,7 @@ pipeline {
     }
 
     stages {
-        stage("Fetch Package Versions") {
+        stage("Fetch New Package Versions") {
             steps {
                 script {
                     // 使用 GitHub API 抓取指定 package 的版本列表
@@ -21,8 +21,11 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
+                    // 輸出 JSON 回應，便於除錯
                     echo "Response: ${response}"
-                    
+
+
+                    // 解析 JSON 結果
                     def versions = readJSON text: response
                     def latestVersion = versions[0]?.metadata?.container?.tags[0]
                     echo "Latest version: ${latestVersion}"
@@ -39,11 +42,16 @@ pipeline {
         stage("Build and Push New Version") {
             steps {
                 script {
-                    // 假設你已經有 Dockerfile，這裡可以構建並推送新版本
                     echo "Building Docker image with tag: ${ORG_NAME}/${PACKAGE_NAME}:${NEW_VERSION}"
 
-                    // echo "Pushing Docker image with new version ${NEW_VERSION}"
-                    // sh "docker push ghcr.io/${ORG_NAME}/${PACKAGE_NAME}:${NEW_VERSION}"
+                    sh "docker build -t letcrm-api:latest ."
+                    sh "docker tag letcrm-api:latest ghcr.io/omnitw/letcrm-api:${NEW_VERSION}"
+
+                    //login to ghcr.io
+                    sh "echo $GITHUB_TOKEN | docker login ghcr.io -u ethan-omniway --password-stdin"
+
+                    //push to ghcr.io
+                    sh "docker push ghcr.io/omnitw/letcrm-api:${NEW_VERSION}"
                 }
             }
         }

@@ -29,7 +29,7 @@ app.use(function (req, res, next) {
 });
 
 console.log(`現在的環近變數是${process.env.NODE_ENV}`);
-
+console.log(`${process.env.FOO}`);
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
